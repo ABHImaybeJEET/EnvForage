@@ -124,7 +124,7 @@ on Windows, WSL2, and Ubuntu 22.04. ✅
 
 ### Deliverables
 - [x] LLM provider abstraction (pluggable: OpenAI, OpenRouter, Ollama)
-- [ ] Structured prompt builder (diagnostic context → prompt)
+- [x] Structured prompt builder (diagnostic context → prompt)
 - [x] `SuggestedFix` response schema (Pydantic)
 - [ ] Shell command safety filter
 - [ ] `POST /api/troubleshoot` endpoint

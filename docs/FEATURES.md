@@ -284,6 +284,8 @@ are Phase 5 deliverables.
 - `backend/app/ai/providers/mock.py` — deterministic `MockProvider` for testing
 - `backend/app/ai/providers/openrouter.py` — `OpenRouterProvider` (async HTTP, JSON mode, retry, Pydantic parsing)
 - `backend/app/ai/providers/__init__.py` — `get_provider()` factory function
+- `backend/app/ai/prompts/system.py` — System prompt constants with safety rules and repair template IDs
+- `backend/app/ai/prompts/troubleshoot.py` — `TroubleshootPromptBuilder` (diagnostic → LLM user message)
 
 ### AI Provider Interface
 

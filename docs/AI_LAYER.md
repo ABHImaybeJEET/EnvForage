@@ -174,7 +174,7 @@ The Template Engine produces the actual script, with safety guarantees.
 
 ---
 
-## Module Structure (Planned)
+## Module Structure
 
 ```
 backend/
@@ -182,21 +182,22 @@ backend/
     └── ai/
         ├── __init__.py
         ├── providers/
-        │   ├── base.py            # LLMProvider ABC
-        │   ├── openai.py          # OpenAI implementation
-        │   ├── openrouter.py      # OpenRouter implementation
-        │   ├── ollama.py          # Ollama local implementation
-        │   └── mock.py            # Test mock
+        │   ├── __init__.py        # get_provider() factory         ✅
+        │   ├── base.py            # LLMProvider ABC                ✅
+        │   ├── openrouter.py      # OpenRouter implementation      ✅
+        │   ├── mock.py            # Test mock                      ✅
+        │   ├── openai.py          # OpenAI (planned)               🔲
+        │   └── ollama.py          # Ollama local (planned)         🔲
         ├── prompts/
-        │   ├── system.py          # System prompt builder
-        │   └── troubleshoot.py    # Troubleshoot prompt builder
-        ├── safety.py              # SafetyFilter
-        ├── models.py              # TroubleshootRequest, TroubleshootResponse, SuggestedFix
-        ├── service.py             # AITroubleshootService (orchestrator)
+        │   ├── __init__.py
+        │   ├── system.py          # System prompt constants        ✅
+        │   └── troubleshoot.py    # TroubleshootPromptBuilder      ✅
+        ├── models.py              # Request, Response, Meta models ✅
+        ├── service.py             # AITroubleshootService          🔲
         └── tests/
-            ├── test_safety.py
-            ├── test_service.py
-            └── test_prompts.py
+            ├── test_safety.py                                      🔲
+            ├── test_service.py                                     🔲
+            └── test_prompts.py                                     🔲
 ```
 
 ---

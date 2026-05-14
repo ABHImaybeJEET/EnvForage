@@ -15,6 +15,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Provider factory `get_provider()` — reads `ENVFORGE_LLM_PROVIDER` env var and instantiates the correct provider with lazy imports.
   - New config fields: `ai_max_tokens` (default 2048), `ai_temperature` (default 0.3).
   - ADR-009: OpenRouter as Primary LLM Gateway.
+- **Phase 4 — Part 2**: Prompt Engineering System.
+  - System prompt constants with non-negotiable safety rules, JSON-only output enforcement, and available repair template IDs.
+  - `TroubleshootPromptBuilder` class — converts DiagnosticReport + profile context into structured LLM user messages with CUDA matrix injection and prompt injection sanitisation.
+  - `TroubleshootRequest` Pydantic model — structured input contract for the AI troubleshoot endpoint.
+  - `LLMResponseMeta` model for audit logging (provider, model, token usage).
 
 ## [0.3.0] - 2026-05-14
 
