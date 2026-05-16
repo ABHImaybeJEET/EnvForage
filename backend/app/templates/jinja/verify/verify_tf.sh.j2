@@ -28,7 +28,7 @@ else
 fi
 
 # Check 2: TensorFlow import and GPU availability
-if python3 -c "import tensorflow as tf; print('Found GPUs:', tf.config.list_physical_devices('GPU'))" > /dev/null 2>&1; then
+if python3 -c "import tensorflow as tf; import sys; sys.exit(0 if tf.config.list_physical_devices('GPU') else 1)" > /dev/null 2>&1; then
     DEVICE_NAME=$(python3 -c "import tensorflow as tf; devices = tf.config.list_physical_devices('GPU'); print(devices[0].name if devices else 'None')" 2>/dev/null || echo "unknown")
     pass "TensorFlow can successfully access the GPU: $DEVICE_NAME"
 else
