@@ -1,5 +1,9 @@
 """Profile endpoints — GET /api/v1/profiles and /api/v1/profiles/{slug}."""
+import logging
+
 from fastapi import APIRouter, HTTPException, Query, status
+
+logger = logging.getLogger(__name__)
 
 from app.api.deps import DB
 from app.schemas.profile import (
@@ -75,9 +79,10 @@ async def create_profile(profile_in: ProfileCreateSchema, db: DB) -> ProfileDeta
                 status_code=status.HTTP_409_CONFLICT,
                 detail="A profile with this slug already exists."
             )
+        logger.error("Failed to create profile: %s", str(e))
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=str(e)
+            detail="An internal error occurred while creating the profile."
         )
 
 

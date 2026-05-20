@@ -10,17 +10,18 @@ pytestmark = pytest.mark.asyncio
 
 
 @pytest.fixture
-async def client(db_session):
+async def client(db_session_factory):
     """Provide an AsyncClient for testing FastAPI routes, overriding the DB dependency."""
     async def _get_db_override():
-        yield db_session
+        async with db_session_factory() as session:
+            yield session
 
     app.dependency_overrides[get_db] = _get_db_override
     async with AsyncClient(
         transport=ASGITransport(app=app), base_url="http://test"
     ) as c:
         yield c
-    app.dependency_overrides.clear()
+    del app.dependency_overrides[get_db]
 
 
 async def test_profile_crud_lifecycle(client, db_session):
