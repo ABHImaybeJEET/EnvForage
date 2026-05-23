@@ -4,6 +4,7 @@ Template Engine — renders Jinja2 templates into setup scripts.
 All rendered output passes through SafetyFilter before being returned.
 This module never executes generated code; it only renders text.
 """
+
 from pathlib import Path
 
 from jinja2 import Environment, FileSystemLoader, StrictUndefined
@@ -16,33 +17,35 @@ TEMPLATES_DIR = Path(__file__).parent / "jinja"
 
 # ── Template name → output filename mapping ────────────────────────────────────
 TEMPLATE_MAP: dict[str, str] = {
-    "setup.sh":           "setup/setup_linux.sh.j2",
-    "setup.ps1":          "setup/setup_windows.ps1.j2",
-    "requirements.txt":   "config/requirements.j2",
-    "Dockerfile":         "config/dockerfile.j2",
-    "devcontainer.json":  "config/devcontainer.j2",
-    "verify.sh":          "verify/verify_generic.sh.j2",
-    "verify_torch.sh":    "verify/verify_torch.sh.j2",
-    "verify_tf.sh":       "verify/verify_tf.sh.j2",
-    "verify_opencv.sh":   "verify/verify_opencv.sh.j2",
-    "environment.yml":    "config/environment.yml.j2",
-    "pyproject.toml":     "config/pyproject.toml.j2",
+    "setup.sh": "setup/setup_linux.sh.j2",
+    "setup.ps1": "setup/setup_windows.ps1.j2",
+    "requirements.txt": "config/requirements.j2",
+    "Dockerfile": "config/dockerfile.j2",
+    "devcontainer.json": "config/devcontainer.j2",
+    "verify.sh": "verify/verify_generic.sh.j2",
+    "verify_torch.sh": "verify/verify_torch.sh.j2",
+    "verify_tf.sh": "verify/verify_tf.sh.j2",
+    "verify_opencv.sh": "verify/verify_opencv.sh.j2",
+    "environment.yml": "config/environment.yml.j2",
+    "pyproject.toml": "config/pyproject.toml.j2",
+    "Makefile": "config/makefile.j2",
 }
 
 # ── Profile-specific verify template mapping ───────────────────────────────────
 PROFILE_VERIFY_TEMPLATES: dict[str, str] = {
-    "pytorch-cuda":        "verify_torch.sh",
-    "tf-gpu":              "verify_tf.sh",
-    "yolov8":              "verify_torch.sh",
-    "stable-diffusion":    "verify_torch.sh",
-    "opencv-beginner":     "verify_opencv.sh",
+    "pytorch-cuda": "verify_torch.sh",
+    "tf-gpu": "verify_tf.sh",
+    "yolov8": "verify_torch.sh",
+    "stable-diffusion": "verify_torch.sh",
+    "opencv-beginner": "verify_opencv.sh",
 }
+
 
 def _build_jinja_env() -> Environment:
     return Environment(
         loader=FileSystemLoader(str(TEMPLATES_DIR)),
-        undefined=StrictUndefined,   # Error on undefined variables
-        autoescape=False,            # Shell scripts are NOT HTML — no escaping
+        undefined=StrictUndefined,  # Error on undefined variables
+        autoescape=False,  # Shell scripts are NOT HTML — no escaping
         trim_blocks=True,
         lstrip_blocks=True,
     )
