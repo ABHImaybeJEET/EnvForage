@@ -1,3 +1,4 @@
+import asyncio
 import json
 import logging
 from collections.abc import AsyncIterator
@@ -123,36 +124,77 @@ class OpenAIProvider(LLMProvider):
 
         async def generator() -> AsyncIterator[str]:
             async with httpx.AsyncClient(timeout=60.0) as client:
-                async with client.stream(
-                    "POST",
-                    f"{self.base_url}/chat/completions",
-                    json=payload,
-                    headers=self.headers,
-                ) as response:
-                    if response.status_code != 200:
-                        error_body = await response.aread()
+                max_retries = 3
+
+                for attempt in range(max_retries):
+                    try:
+                        async with client.stream(
+                            "POST",
+                            f"{self.base_url}/chat/completions",
+                            json=payload,
+                            headers=self.headers,
+                        ) as response:
+                            
+                            if response.status_code == 429:
+                                retry_after = response.headers.get("Retry-After")
+
+                                if retry_after and retry_after.isdigit():
+                                    delay = int(retry_after)
+                                else:
+                                    delay = 2 ** attempt
+
+                                logger.warning(
+                                    "OpenAI rate limited. Retrying in %s seconds...",
+                                    delay,
+                                )
+
+                                await asyncio.sleep(delay)
+                                continue
+                
+                            if response.status_code != 200:
+                                error_body = await response.aread()
+
+                                raise LLMProviderError(
+                                    "openai",
+                                    f"HTTP {response.status_code}: {error_body.decode(errors='replace')[:500]}",
+                                )
+
+                            async for line in response.aiter_lines():
+                                if not line or not line.startswith("data: "):
+                                    continue
+
+                                data_str = line[6:].strip()
+
+                                if data_str == "[DONE]":
+                                    break
+
+                                try:
+                                    data = json.loads(data_str)
+
+                                    choices = data.get("choices", [])
+
+                                    if choices:
+                                        delta = choices[0].get("delta", {})
+                                        content = delta.get("content", "")
+
+                                        if content:
+                                            yield content
+
+                                except json.JSONDecodeError:
+                                    continue
+
+                            return
+
+                    except httpx.HTTPError as e:
                         raise LLMProviderError(
                             "openai",
-                            f"HTTP {response.status_code}: {error_body.decode(errors='replace')[:500]}",
-                        )
+                            f"Streaming connection error: {str(e)}",
+                        ) from e
 
-                    async for line in response.aiter_lines():
-                        if not line or not line.startswith("data: "):
-                            continue
-
-                        data_str = line[6:].strip()
-                        if data_str == "[DONE]":
-                            break
-
-                        try:
-                            data = json.loads(data_str)
-                            choices = data.get("choices", [])
-                            if choices:
-                                delta = choices[0].get("delta", {})
-                                content = delta.get("content", "")
-                                if content:
-                                    yield content
-                        except json.JSONDecodeError:
-                            continue
+                raise LLMProviderError(
+                    "openai",
+                    "OpenAI streaming failed after maximum retry attempts.",
+                )
 
         return generator()
+    
