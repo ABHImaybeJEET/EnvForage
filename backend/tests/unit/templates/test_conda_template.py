@@ -131,3 +131,53 @@ def test_conda_template_name_field_matches_profile():
     result = renderer.render("environment.yml", context)
     assert "name: pytorch-cuda" in result.content
 
+def test_conda_template_cuda_adds_pytorch_nvidia_channels():
+    """When cuda_version is set, channels must include pytorch and nvidia."""
+    context = make_context(
+        profile_name="cuda-env",
+        python_version="3.11",
+        cuda_version="12.1",
+    )
+    renderer = TemplateRenderer()
+    result = renderer.render("environment.yml", context)
+    assert "- pytorch" in result.content
+    assert "- nvidia" in result.content
+    assert "- conda-forge" in result.content
+    assert "- defaults" in result.content
+
+
+def test_conda_template_rocm_adds_pytorch_channel():
+    """When rocm_version is set, channels must include pytorch but not nvidia."""
+    context = make_context(
+        profile_name="rocm-env",
+        python_version="3.11",
+    )
+    context.resolved = context.resolved.__class__(
+        python_version=context.resolved.python_version,
+        cuda_version=None,
+        target_os=context.resolved.target_os,
+        rocm_version="5.6",
+        packages=context.resolved.packages,
+    )
+    renderer = TemplateRenderer()
+    result = renderer.render("environment.yml", context)
+    assert "- pytorch" in result.content
+    assert "- nvidia" not in result.content
+    assert "- conda-forge" in result.content
+
+
+def test_conda_template_cpu_only_no_gpu_channels():
+    """Without cuda or rocm, channels must only have conda-forge and defaults."""
+    context = make_context(
+        profile_name="cpu-env",
+        python_version="3.10",
+        cuda_version=None,
+    )
+    renderer = TemplateRenderer()
+    result = renderer.render("environment.yml", context)
+    assert "- pytorch" not in result.content
+    assert "- nvidia" not in result.content
+    assert "- conda-forge" in result.content
+    assert "- defaults" in result.content
+
+    
