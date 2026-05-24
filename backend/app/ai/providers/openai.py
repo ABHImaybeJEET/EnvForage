@@ -33,7 +33,7 @@ class OpenAIProvider(LLMProvider):
         self.temperature = temperature
         self.headers = {
             "Authorization": f"Bearer {self.api_key}",
-            "Content-Type": "application/json"
+            "Content-Type": "application/json",
         }
 
     async def complete(
@@ -88,9 +88,14 @@ class OpenAIProvider(LLMProvider):
 
                 return response_model.model_validate_json(content)
             except httpx.HTTPStatusError as e:
-                raise LLMProviderError("openai", f"OpenAI API error occurred: {e.response.text}")
+                raise LLMProviderError(
+                    "openai", f"OpenAI API error occurred: {e.response.text}"
+                )
             except Exception as e:
-                raise LLMProviderError("openai", f"Unexpected connection error under OpenAI provider: {str(e)}")
+                raise LLMProviderError(
+                    "openai",
+                    f"Unexpected connection error under OpenAI provider: {str(e)}",
+                )
 
     def stream(
         self,
@@ -134,23 +139,29 @@ class OpenAIProvider(LLMProvider):
                             json=payload,
                             headers=self.headers,
                         ) as response:
-                            
                             if response.status_code == 429:
                                 retry_after = response.headers.get("Retry-After")
 
                                 if retry_after and retry_after.isdigit():
                                     delay = int(retry_after)
                                 else:
-                                    delay = 2 ** attempt
+                                    delay = 2**attempt
 
                                 logger.warning(
                                     "OpenAI rate limited. Retrying in %s seconds...",
                                     delay,
                                 )
 
+                                # Short-circuit immediately on the final attempt to avoid trailing latency
+                                if attempt >= max_retries - 1:
+                                    raise LLMProviderError(
+                                        "openai",
+                                        "Rate limited (429) - OpenAI streaming retry attempts exhausted.",
+                                    )
+
                                 await asyncio.sleep(delay)
                                 continue
-                
+
                             if response.status_code != 200:
                                 error_body = await response.aread()
 
@@ -197,4 +208,3 @@ class OpenAIProvider(LLMProvider):
                 )
 
         return generator()
-    
