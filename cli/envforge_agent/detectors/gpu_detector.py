@@ -7,13 +7,13 @@ Never raises — returns empty list if nvidia-smi is not available.
 """
 from __future__ import annotations
 
-import re
 import logging
+import re
 import subprocess
 from typing import NamedTuple
-logger = logging.getLogger(__name__)
-
 from envforge_agent.schemas import GPUInfo
+
+logger = logging.getLogger(__name__)
 
 
 def detect_gpus() -> list[GPUInfo]:
@@ -56,12 +56,16 @@ def _detect_via_nvidia_smi() -> list[GPUInfo]:
     except subprocess.TimeoutExpired:
         logger.debug("nvidia-smi command timed out after 15 seconds.")
         return []
-    except Exception as e:
-        logger.debug(f"Unexpected error running nvidia-smi: {str(e)}")
+    except (OSError, subprocess.SubprocessError) as e:
+        logger.debug("Unexpected error running nvidia-smi: %s", e, exc_info=True)
         return []
 
     if result.returncode != 0:
-        logger.debug(f"nvidia-smi failed with return code {result.returncode}. Error: {result.stderr.strip()}")
+        logger.debug(
+             "nvidia-smi failed with return code %s. Error: %s",
+             result.returncode,
+             result.stderr.strip(),
+         )
         return []
 
     gpus: list[GPUInfo] = []
