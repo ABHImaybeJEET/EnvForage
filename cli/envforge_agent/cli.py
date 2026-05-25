@@ -657,7 +657,7 @@ def troubleshoot(api_url: str) -> None:
                 # SSE format: data: ...
                 if line.startswith("data: "):
 
-                    chunk = line.removeprefix("data: ").strip()
+                    chunk = line.removeprefix("data: ")
 
                     # accumulate streamed fragments
                     buffer += chunk
@@ -666,6 +666,14 @@ def troubleshoot(api_url: str) -> None:
             try:
 
                 parsed = json.loads(buffer)
+
+                if parsed.get("error"):
+
+                    err_console.print(
+                        f"[ERROR] {parsed.get('message', parsed['error'])}"
+                    )
+
+                    sys.exit(1)
 
                 # Root Cause
                 console.print("\n[bold red]Root Cause:[/]")
@@ -712,15 +720,17 @@ def troubleshoot(api_url: str) -> None:
                         f"{parsed['confidence']}"
                     )
 
+                console.print(
+                    "\n[bold green][+] Troubleshooting complete[/]"
+                )
+
             except json.JSONDecodeError:
 
                 err_console.print(
                     "[ERROR] Failed to parse streamed AI response."
                 )
 
-            console.print(
-                "\n[bold green][+] Troubleshooting complete[/]"
-            )
+                sys.exit(1)
 
     except httpx.ConnectError:
 
@@ -767,3 +777,4 @@ def troubleshoot(api_url: str) -> None:
         err_console.print(
             f"[ERROR] Unexpected error: {exc}"
         )
+        sys.exit(1)
