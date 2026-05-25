@@ -7,7 +7,8 @@ All configuration is sourced from environment variables or a local `.env` file.
 shares the same env-loading bootstrap before `Settings` is read.
 """
 from functools import lru_cache
-from typing import Literal
+from pathlib import Path
+from typing import Literal, Optional
 
 from dotenv import load_dotenv
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -29,6 +30,7 @@ class Settings(BaseSettings):
     secret_key: str = "dev-secret-key-change-in-production"
     app_name: str = "EnvForage"
     app_version: str = "1.0.0"
+    custom_template_dir: Optional[Path] = None
 
     # ── Database ──────────────────────────────────────────────
     database_url: str = "postgresql+asyncpg://postgres:postgres@localhost:5432/envforge"
