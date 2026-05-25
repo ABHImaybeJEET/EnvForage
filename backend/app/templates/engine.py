@@ -5,9 +5,9 @@ All rendered output passes through SafetyFilter before being returned.
 This module never executes generated code; it only renders text.
 """
 from collections.abc import Sequence
+from functools import lru_cache
 from pathlib import Path
 
-from functools import lru_cache
 from jinja2 import ChoiceLoader, FileSystemLoader, StrictUndefined, select_autoescape
 from jinja2.sandbox import SandboxedEnvironment
 

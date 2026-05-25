@@ -1,6 +1,7 @@
 """Unit tests to verify custom template directory overrides and ChoiceLoader integration."""
+from unittest.mock import MagicMock, patch
+
 import pytest
-from unittest.mock import patch, MagicMock
 from jinja2.sandbox import SecurityError
 
 from app.compatibility.models import ResolvedEnvironment
