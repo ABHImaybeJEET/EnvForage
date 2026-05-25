@@ -59,13 +59,10 @@ def audit_command(source_a: str, source_b: str) -> None:
     except click.BadParameter as exc:
         err_console.print(f"[ERROR] {exc.message}")
         sys.exit(2)
-    except FileNotFoundError as exc:
-        err_console.print(f"[ERROR] {exc}")
-        sys.exit(2)
 
     try:
         result = diff(src_a, src_b)
-    except (RuntimeError, FileNotFoundError) as exc:
+    except RuntimeError as exc:
         err_console.print(f"[ERROR] {exc}")
         sys.exit(1)
 

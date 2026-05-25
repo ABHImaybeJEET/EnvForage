@@ -90,16 +90,24 @@ class LockfileSource(Source):
         self.name = f"lockfile:{self.path.name}"
 
     def packages(self) -> Iterator[Package]:
-        if not self.path.exists():
-            raise FileNotFoundError(f"Lockfile not found: {self.path}")
+        try:
+            content = self.path.read_text(encoding="utf-8")
+        except FileNotFoundError as exc:
+            raise RuntimeError(f"Lockfile not found: {self.path}") from exc
+        except UnicodeDecodeError as exc:
+            raise RuntimeError(
+                f"Lockfile is not valid UTF-8: {self.path} ({exc.reason})"
+            ) from exc
+        except (PermissionError, IsADirectoryError, OSError) as exc:
+            raise RuntimeError(
+                f"Could not read lockfile {self.path}: {exc}"
+            ) from exc
 
-        for raw_line in self.path.read_text(encoding="utf-8").splitlines():
+        for raw_line in content.splitlines():
             line = raw_line.split("#", 1)[0].strip()
             if not line or line.startswith("-"):
                 continue
 
-            # Detect '===' (PEP 440 arbitrary equality) before '==' so we
-            # don't misparse 'pkg===1.0' as 'pkg==' + '=1.0'.
             if "===" in line:
                 separator = "==="
             elif "==" in line:

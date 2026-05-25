@@ -95,8 +95,15 @@ class TestLockfileSource:
         assert packages == [Package(name="django", version="4.2.0")]
 
     def test_raises_on_missing_file(self):
-        with pytest.raises(FileNotFoundError):
+        with pytest.raises(RuntimeError, match=r"not found"):
             list(LockfileSource("/does/not/exist.txt").packages())
+
+    def test_raises_on_invalid_utf8(self, tmp_path: Path):
+        lockfile = tmp_path / "req.txt"
+        # Write bytes that are NOT valid UTF-8 (lone continuation bytes)
+        lockfile.write_bytes(b"django==4.2.0\n\xff\xfe garbage\n")
+        with pytest.raises(RuntimeError, match=r"not valid UTF-8"):
+            list(LockfileSource(lockfile).packages())
     
     def test_handles_arbitrary_equality(self, tmp_path: Path):
         """PEP 440 === (arbitrary equality) should parse correctly,
