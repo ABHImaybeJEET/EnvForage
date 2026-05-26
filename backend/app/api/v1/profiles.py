@@ -1,10 +1,11 @@
 """Profile endpoints — GET /api/v1/profiles and /api/v1/profiles/{slug}."""
 import logging
 
-from fastapi import APIRouter, Query, status
+from fastapi import APIRouter, Depends, Query, status
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 
 from app.api.deps import DB
+from app.middleware.rate_limit import general_rate_limit
 from app.core.exceptions import ConflictError, EntityNotFoundError, InternalServerError
 from app.schemas.profile import (
     ProfileCreateSchema,
@@ -63,7 +64,11 @@ async def get_profile(slug: str, db: DB) -> ProfileDetailSchema:
     response_model=ProfileDetailSchema,
     status_code=status.HTTP_201_CREATED,
 )
-async def create_profile(profile_in: ProfileCreateSchema, db: DB) -> ProfileDetailSchema:
+async def create_profile(
+    profile_in: ProfileCreateSchema,
+    db: DB,
+    _rate_limit: None = Depends(general_rate_limit),
+) -> ProfileDetailSchema:
     """
     Create a new environment profile.
     """

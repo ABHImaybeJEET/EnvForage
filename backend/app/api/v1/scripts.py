@@ -2,10 +2,11 @@
 import io
 import zipfile
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import StreamingResponse
 
 from app.api.deps import DB
+from app.middleware.rate_limit import general_rate_limit
 from app.compatibility.errors import (
     IncompatibilityError,
     UnknownVersionError,
@@ -21,6 +22,7 @@ router = APIRouter()
 async def generate_scripts(
     request: GenerationRequest,
     db: DB,
+    _rate_limit: None = Depends(general_rate_limit),
 ) -> GenerationResponse:
     """
     Generate a set of setup scripts for a given profile and target configuration.
