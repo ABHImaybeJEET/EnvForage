@@ -1,12 +1,16 @@
-from fastapi import APIRouter,HTTPException
-from pydantic import BaseModel,EmailStr
-from passlib.context import CryptContext
-from jose import jwt
 import os
+from datetime import datetime, timedelta, timezone
+
+from fastapi import APIRouter, HTTPException
+from jose import jwt
+from passlib.context import CryptContext
+from pydantic import BaseModel, EmailStr
 
 router=APIRouter()
 pwd=CryptContext(schemes=["bcrypt"],deprecated="auto")
-SK=os.getenv("SECRET_KEY","nsoc_secret")
+SK=os.getenv("SECRET_KEY")
+if not SK:
+    raise RuntimeError("SECRET_KEY environment variable is not set")
 
 class RegData(BaseModel):
     fname:str
@@ -38,5 +42,6 @@ def signin(data:LoginData):
     usr=users_db.get(data.email)
     if not usr or not pwd.verify(data.password,usr["password"]):
         raise HTTPException(status_code=401,detail="Invalid email or password")
-    token=jwt.encode({"email":data.email},SK,algorithm="HS256")
+    exp=datetime.now(timezone.utc)+timedelta(hours=24)
+    token=jwt.encode({"email":data.email,"exp":exp},SK,algorithm="HS256")
     return {"token":token,"email":data.email}
