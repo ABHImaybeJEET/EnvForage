@@ -87,8 +87,22 @@ docker-compose up -d
 ```
 
 ### 3. Run the Backend (Kubernetes)
+**Prerequisites:**
+- [Helm 3+](https://helm.sh/docs/intro/install/)
+- A running Kubernetes cluster (Docker Desktop, minikube, or cloud)
+- NGINX Ingress Controller (only if `ingress.enabled=true`):
+```bash
+  kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.10.0/deploy/static/provider/cloud/deploy.yaml
+```
+
 ```bash
 helm install envforge ./helm/envforge
+
+# Enable ingress (optional)
+helm install envforge ./helm/envforge \
+  --set ingress.enabled=true \
+  --set ingress.host=api.yourdomain.com
+
 kubectl port-forward svc/envforge 8000:8000
 ```
 
