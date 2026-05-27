@@ -22,10 +22,10 @@ class LoginData(BaseModel):
     email:EmailStr
     password:str
 
-users_db={}
+users_db:dict[str,dict[str,str]]={}
 
 @router.post("/signup")
-def signup(data:RegData):
+def signup(data:RegData)->dict[str,str]:
     if data.email in users_db:
         raise HTTPException(status_code=400,detail="Email already registered")
     if len(data.password)<6:
@@ -38,7 +38,7 @@ def signup(data:RegData):
     return {"message":"Account created successfully"}
 
 @router.post("/signin")
-def signin(data:LoginData):
+def signin(data:LoginData)->dict[str,str]:
     usr=users_db.get(data.email)
     if not usr or not pwd.verify(data.password,usr["password"]):
         raise HTTPException(status_code=401,detail="Invalid email or password")
