@@ -81,7 +81,27 @@ export default function HomePage() {
           background: "var(--bg-primary)"
         }}
       >
-        <div className="container" style={{ maxWidth: "1200px" }}>
+        <div 
+          style={{ 
+            position: "absolute", 
+            top: "50%", 
+            left: "50%", 
+            transform: "translate(-50%, -50%)", 
+            fontSize: "clamp(4rem, 12vw, 15rem)", 
+            fontWeight: 900, 
+            color: "var(--text-primary)", 
+            opacity: 0.03, 
+            whiteSpace: "nowrap", 
+            pointerEvents: "none", 
+            zIndex: 0,
+            fontFamily: "var(--font-mono)",
+            userSelect: "none"
+          }}
+        >
+          pip install envforage
+        </div>
+
+        <div className="container" style={{ maxWidth: "1200px", position: "relative", zIndex: 2 }}>
           <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8 }}>
             <h1
               style={{
@@ -158,7 +178,7 @@ export default function HomePage() {
                   transition: "all 0.2s ease",
                 }}
               >
-                Coming Soon
+                Downloads
               </Link>
             </div>
 
