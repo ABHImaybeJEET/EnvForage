@@ -175,7 +175,7 @@ except (TypeError, ValueError):
     prompt_tokens = 0
     completion_tokens = 0
 
-        record_ai_token_usage(
+record_ai_token_usage(
             provider=provider_name,
             model=model_name,
             prompt_tokens=prompt_tokens,
