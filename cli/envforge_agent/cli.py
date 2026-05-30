@@ -107,7 +107,15 @@ def cli(ctx: click.Context, no_color: bool) -> None:
     default=False,
     help="Output diagnostics in SARIF 2.1.0 format for CI/CD pipeline integrations.",
 )
-
+@click.option(
+    "--format",
+    "-f",
+    "output_format",
+    type=click.Choice(["json", "yaml"], case_sensitive=False),
+    default="json",
+    show_default=True,
+    help="Output format for the diagnostic report (json, yaml).",
+)
 @click.option(
     "--timeout", "-t",
     type=int,
@@ -116,7 +124,7 @@ def cli(ctx: click.Context, no_color: bool) -> None:
     help="Timeout in seconds for each detector subprocess call. Default: 30s.",
 )
 
-def diagnose(output: str | None, send: bool, api_url: str, quiet: bool, sarif: bool, timeout: int) -> None:
+def diagnose(output: str | None, send: bool, api_url: str, quiet: bool, sarif: bool, timeout: int, output_format: str) -> None:
     """
     Collect a full diagnostic report of this machine's ML environment.
 
@@ -144,17 +152,25 @@ def diagnose(output: str | None, send: bool, api_url: str, quiet: bool, sarif: b
         click.echo(_json.dumps(report.to_sarif(), indent=2))
         return
 
+    if send and output_format != "json":
+        err_console.print(f"[ERROR] --send requires JSON; --format {output_format} is incompatible.")
+        err_console.print("  Hint: Remove --format or drop --send.")
+        sys.exit(1)
 
-    report_json = report.to_json(indent=2)
+    if output_format == "yaml":
+        import yaml
+        report_output = yaml.dump(report.model_dump(mode='json'), default_flow_style=False, sort_keys=False)
+    else:
+        report_output = report.to_json(indent=2)
 
     # ── Output to file ──────────────────────────────────────────────────────
     if output:
-        Path(output).write_text(report_json, encoding="utf-8")
+        Path(output).write_text(report_output, encoding="utf-8")
         if not quiet:
             console.print(f"\n[green][+][/] Report saved to [bold]{output}[/]")
     elif not send:
         # Print JSON to stdout (pipe-friendly)
-        click.echo(report_json)
+        click.echo(report_output)
 
     # ── Send to API ─────────────────────────────────────────────────────────
     if send:
@@ -183,12 +199,11 @@ def _print_report_summary(report: DiagnosticReport) -> None:
     elif report.ram.total_gb < 16:
         ram_str += "  [yellow][!] WARNING: Under 16 GB — some ML profiles may be slow[/]"
     table.add_row("RAM", ram_str)
-    
-    disk = detect_disk()
-    disk_str = f"{disk['free_gb']} GB free of {disk['total_gb']} GB"
-    if disk["free_gb"] < 5:
+
+    disk_str = f"{report.disk.available_gb:.1f} GB free of {report.disk.total_gb:.1f} GB"
+    if report.disk.available_gb < 5:
         disk_str += "  [bold red]⚠ CRITICAL: Under 5 GB — setup will likely fail[/]"
-    elif disk["free_gb"] < 20:
+    elif report.disk.available_gb < 20:
         disk_str += "  [yellow]⚠ WARNING: Low disk space — GPU profiles need 20+ GB[/]"
     table.add_row("Disk Free", disk_str)
 
