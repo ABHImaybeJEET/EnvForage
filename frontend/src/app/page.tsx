@@ -84,13 +84,13 @@ export default function HomePage() {
         <div 
           style={{ 
             position: "absolute", 
-            top: "50%", 
-            left: "50%", 
-            transform: "translate(-50%, -50%)", 
-            fontSize: "clamp(4rem, 12vw, 15rem)", 
-            fontWeight: 900, 
+            top: "15%", 
+            right: "-2%",
+            transform: "rotate(15deg)", 
+            fontSize: "clamp(3rem, 6vw, 7rem)", 
+            fontWeight: 800, 
             color: "var(--text-primary)", 
-            opacity: 0.03, 
+            opacity: 0.06, 
             whiteSpace: "nowrap", 
             pointerEvents: "none", 
             zIndex: 0,
@@ -98,7 +98,7 @@ export default function HomePage() {
             userSelect: "none"
           }}
         >
-          pip install envforage
+          $ pip install envforage
         </div>
 
         <div className="container" style={{ maxWidth: "1200px", position: "relative", zIndex: 2 }}>
