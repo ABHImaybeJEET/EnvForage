@@ -126,6 +126,8 @@ def cli(ctx: click.Context, no_color: bool) -> None:
     help="Timeout in seconds for each detector subprocess call. Default: 30s.",
 )
 def diagnose(output: str | None, send: bool, api_url: str, quiet: bool, sarif: bool, timeout: int, output_format: str = "json") -> None:
+    if api_url and "#" in api_url:
+        api_url = api_url.split("#", 1)[0].strip()
     asyncio.run(_diagnose(output, send, api_url, quiet, sarif, timeout, output_format))
 
 
