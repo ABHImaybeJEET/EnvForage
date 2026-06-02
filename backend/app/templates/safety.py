@@ -12,6 +12,7 @@ import json
 import logging
 import re
 import subprocess
+from typing import Any
 
 import bashlex
 from pydantic import BaseModel
@@ -112,7 +113,7 @@ def _validate_bash_ast(content: str, template_name: str = "") -> None:
 
     violations = []
 
-    def has_substitution(node) -> bool:
+    def has_substitution(node: Any) -> bool:
         if node.kind in ("commandsubstitution", "processsubstitution"):
             return True
         for attr in dir(node):
@@ -132,7 +133,7 @@ def _validate_bash_ast(content: str, template_name: str = "") -> None:
                             return True
         return False
 
-    def check_node(node, parent_pipeline) -> None:
+    def check_node(node: Any, parent_pipeline: Any) -> None:
         # Rule 1: Redirection Target Checks
         if node.kind == "redirect":
             output_node = getattr(node, "output", None)
@@ -238,7 +239,7 @@ def _validate_bash_ast(content: str, template_name: str = "") -> None:
                                 f"Shell command '{cmd_name}' executed with dynamic subshell/substitution: {arg.word if hasattr(arg, 'word') else ''}"
                             )
 
-    def traverse(node, parent_pipeline=None) -> None:
+    def traverse(node: Any, parent_pipeline: Any = None) -> None:
         if not node:
             return
         check_node(node, parent_pipeline)
