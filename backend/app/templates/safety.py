@@ -322,8 +322,14 @@ def _validate_bash_ast(content: str, template_name: str = "") -> None:
 def _validate_shellcheck(content: str, template_name: str = "") -> None:
     """Run shellcheck static analysis on the rendered content."""
     try:
+        args = ["shellcheck", "--severity=warning", "--format=json"]
+        first_line = content.splitlines()[0].strip() if content.strip() else ""
+        if not first_line.startswith("#!"):
+            args.append("--shell=bash")
+        args.append("-")
+
         process = subprocess.run(
-            ["shellcheck", "--severity=warning", "--format=json", "-"],
+            args,
             input=content,
             text=True,
             capture_output=True,
