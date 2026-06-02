@@ -17,6 +17,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.compatibility.matrix.cuda import CUDA_MATRIX
 from app.compatibility.matrix.python import PYTHON_MATRIX
 from app.compatibility.matrix.rocm import ROCM_MATRIX
+from app.compatibility.resolver import clear_compatibility_cache
 from app.models.matrix import CUDAMatrixEntry, PythonMatrixEntry, RocmMatrixEntry
 
 logger = logging.getLogger(__name__)
@@ -214,6 +215,7 @@ async def sync_pypi_releases(db: AsyncSession) -> None:
                         framework,
                     )
                     await db.commit()
+                    await clear_compatibility_cache()
 
             except Exception as exc:
                 await db.rollback()
@@ -300,6 +302,7 @@ async def sync_nvidia_cuda_releases(db: AsyncSession) -> None:
             if new_entries > 0:
                 logger.info("Synced NVIDIA: Added %d new CUDA versions", new_entries)
                 await db.commit()
+                await clear_compatibility_cache()
 
         except Exception as exc:
             await db.rollback()

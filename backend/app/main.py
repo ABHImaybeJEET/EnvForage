@@ -56,7 +56,7 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     print("✅ Cleanup scheduler started (runs every 24h)")
 
     sync_task = None
-    if "pytest" not in sys.modules:
+    if "pytest" not in sys.modules and settings.run_sync_loop:
         sync_task = asyncio.create_task(matrix_sync_loop(AsyncSessionLocal))
 
     yield
